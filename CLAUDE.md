@@ -34,7 +34,7 @@ Path is stored as an ordered array of `[col, row]` waypoints. Enemies lerp betwe
 
 | Currency | Earned by | Spent on |
 |---|---|---|
-| Coins | Stopping trash | Towers, upgrades, clams |
+| Coins | Stopping trash (+ 150 starting) | Towers, upgrades, clams |
 | Seashells | Clam consolation prize | One-use powerups (held in inventory) |
 
 ---
@@ -44,7 +44,7 @@ Path is stored as an ordered array of `[col, row]` waypoints. Enemies lerp betwe
 | Tower | Base cost | Base range (tiles) | Base damage | Fire rate (shots/sec) | Upgrade 1 (50 coins) | Upgrade 2 (100 coins) |
 |---|---|---|---|---|---|---|
 | Net launcher | 50 | 2.5 | 0 (slows only) | — | Slow duration: 2s → 4s | Slow radius: 2.5 → 4 tiles |
-| Seagull squad | 75 | 2 | 15 | 2 | Targets 1 → 2 enemies at once | Damage: 15 → 25 |
+| Seagull squad | 75 | 2 | 15 | 1.75 | Targets 1 → 2 enemies at once | Damage: 15 → 25 |
 | Whale spout | 100 | 3 | 40 (AoE) | 0.5 | AoE radius: 1 → 2 tiles | Damage: 40 → 70 |
 
 - Towers placed by dragging from the bottom panel onto a buildable tile
@@ -98,10 +98,10 @@ Seashell drop is random uniform across the three types.
 
 | Enemy | HP | Speed (tiles/sec) | Coin reward | Introduced |
 |---|---|---|---|---|
-| Plastic bag | 30 | 2.5 | 10 | Wave 1 |
-| Soda can | 80 | 1.8 | 20 | Wave 2 |
-| Old tire | 200 | 1.0 | 40 | Wave 6 |
-| Trash bag (boss) | 500 | 0.8 | 100 + spawns 2 plastic bags on death | Wave 5 |
+| Plastic bag | 40 | 2.5 | 10 | Wave 1 |
+| Soda can | 120 | 1.8 | 20 | Wave 2 |
+| Old tire | 500 | 1.0 | 40 | Wave 6 |
+| Trash bag (boss) | 1200 | 0.8 | 100 + spawns 2 plastic bags on death | Wave 5 |
 
 ---
 

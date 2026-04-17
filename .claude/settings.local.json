@@ -4,7 +4,10 @@
       "mcp__playwright__browser_navigate",
       "Bash(python -m http.server 8765)",
       "mcp__playwright__browser_take_screenshot",
-      "mcp__playwright__browser_console_messages"
+      "mcp__playwright__browser_console_messages",
+      "Bash(npx *)",
+      "Bash(curl -s http://localhost:8765)",
+      "Bash(node *)"
     ]
   }
 }

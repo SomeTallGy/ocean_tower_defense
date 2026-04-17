@@ -306,10 +306,10 @@ const WAVES = [
 ];
 
 const ENEMY_DEFS = {
-  bag:  { hp:30,  speed:2.5, reward:10,  emoji:'🛍️',  color:'#a8d8ea' },
-  can:  { hp:80,  speed:1.8, reward:20,  emoji:'🥤',  color:'#e8a838' },
-  tire: { hp:200, speed:1.0, reward:40,  emoji:'⭕',  color:'#555' },
-  boss: { hp:500, speed:0.8, reward:100, emoji:'🗑️',  color:'#8B4513', boss:true },
+  bag:  { hp:40,  speed:2.5, reward:10,  emoji:'🛍️',  color:'#a8d8ea' },
+  can:  { hp:120, speed:1.8, reward:20,  emoji:'🥤',  color:'#e8a838' },
+  tire: { hp:500, speed:1.0, reward:40,  emoji:'⭕',  color:'#555' },
+  boss: { hp:1200, speed:0.8, reward:100, emoji:'🗑️', color:'#8B4513', boss:true },
 };
 
 const TOWER_DEFS = {
@@ -325,7 +325,7 @@ const TOWER_DEFS = {
   },
   seagull: {
     name: 'Seagull Squad', cost: 75, range: 2,
-    damage: 15, fireRate: 2, // shots/sec → cooldown = 500ms
+    damage: 15, fireRate: 1.75, // shots/sec → cooldown = 571ms
     emoji: '🐦', color: '#f9a825',
     upgrades: [
       { label: 'Targets 2 enemies', cost: 50, apply: t => { t.multiTarget = 2; } },
@@ -348,7 +348,7 @@ let state = {};
 
 function initState() {
   state = {
-    coins: 100,
+    coins: 150,
     lives: 3,
     wave: 0,           // 0-indexed; current wave being played
     phase: 'between',  // 'between' | 'spawning' | 'wave' | 'gameover' | 'win'
@@ -560,17 +560,17 @@ function startWave() {
   updateHUD();
 }
 
-function spawnEnemy(type) {
-  const start = PATH_WAYPOINTS[0];
+function spawnEnemy(type, waypointIndex = 0) {
+  const [sc, sr] = PATH_WAYPOINTS[waypointIndex];
   state.enemies.push({
     type,
     hp: ENEMY_DEFS[type].hp,
     maxHp: ENEMY_DEFS[type].hp,
     speed: ENEMY_DEFS[type].speed,
     reward: ENEMY_DEFS[type].reward,
-    x: start[0] * TILE + TILE/2,
-    y: start[1] * TILE + TILE/2,
-    waypointIndex: 0,
+    x: sc * TILE + TILE/2,
+    y: sr * TILE + TILE/2,
+    waypointIndex,
     progress: 0,
     slowTimer: 0,
     dead: false,
@@ -637,7 +637,11 @@ function updateTowers(dt) {
     if (!nearest) continue;
 
     if (t.type === 'net') {
-      nearest.slowTimer = t.slowDuration;
+      // Slow all enemies within range
+      for (const e of state.enemies) {
+        if (e.dead || e.reached) continue;
+        if (Math.hypot(e.x - cx, e.y - cy) <= t.range * TILE) e.slowTimer = t.slowDuration;
+      }
       t.cooldown = 2000;
       state.projectiles.push({ x: cx, y: cy, tx: nearest.x, ty: nearest.y, target: null, speed: 300, type: 'net' });
     } else if (t.type === 'seagull') {
@@ -652,7 +656,7 @@ function updateTowers(dt) {
       for (const target of targets) {
         state.projectiles.push({ x: cx, y: cy, target, damage: t.damage, speed: 400, type: 'seagull' });
       }
-      t.cooldown = 500; // 2 shots/sec
+      t.cooldown = 571; // 1.75 shots/sec
     } else if (t.type === 'whale') {
       state.projectiles.push({ x: cx, y: cy, target: nearest, damage: t.damage, aoeRadius: t.aoeRadius, speed: 250, type: 'whale' });
       t.cooldown = 2000; // 0.5 shots/sec
@@ -757,6 +761,8 @@ function restartGame() {
   initState();
   updateHUD();
   showStartOverlay();
+  lastTime = null;
+  requestAnimationFrame(gameLoop);
 }
 
 function showStartOverlay() {
@@ -973,6 +979,10 @@ function gameLoop(timestamp) {
       if (e.dead) {
         state.coins += e.reward;
         state.totalCoinsEarned += e.reward;
+        if (e.type === 'boss') {
+          spawnEnemy('bag', e.waypointIndex);
+          spawnEnemy('bag', e.waypointIndex);
+        }
         updateHUD();
       }
     }
