@@ -162,6 +162,7 @@ Seashell drop is random uniform across the three types.
 - Gacha roll: `Math.random() < 0.5` for win/loss; `Math.random()` to pick which animal from eligible pool
 - Animal collection state: `{ swordfish: 0, octopus: 0, pufferfish: 0, seaTurtle: 0 }` (value = upgrade level, 0 = not owned)
 - Deploy target: GitHub Pages (static, no backend)
+- Playwright output (screenshots, traces, test results): `.playwright-output/` (gitignored)
 
 ---
 
