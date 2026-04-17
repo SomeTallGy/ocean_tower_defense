@@ -166,6 +166,14 @@ Seashell drop is random uniform across the three types.
 
 ---
 
+## Known pitfalls (do not repeat)
+
+- **Wave overlay must not block the grid.** The `#wave-overlay` is positioned `top: 12px; left: 50%; transform: translateX(-50%)` — a compact banner at the top of the canvas. Do not revert it to `top: 50% / transform: translate(-50%, -50%)` (centered), as that blocks tower placement.
+- **Wave 1 prep window.** Before wave 1 starts, the player gets a 10-second countdown during which they can place towers. The overlay button reads "Place towers, then Start ▶" and triggers the countdown — it must not skip straight to `startWave()`.
+- **Canvas `fillStyle` alpha leaks into emoji.** After drawing semi-transparent shapes (e.g. the enemy shadow at `rgba(0,0,0,0.2)`), always reset `ctx.fillStyle` to an opaque color before calling `ctx.fillText`. Some browsers inherit the alpha from `fillStyle` when rendering emoji, making them nearly invisible.
+
+---
+
 ## Sprint plan
 
 | Sprint | Goal |
