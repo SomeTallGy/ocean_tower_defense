@@ -46,6 +46,109 @@
   .life { font-size: 22px; }
   .life.lost { opacity: 0.2; }
   #wave-info { font-size: 16px; color: #f5c842; }
+  #pause-btn {
+    background: none;
+    border: 2px solid #4db8d4;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 4px 12px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  #pause-btn:hover { border-color: #f5c842; background: rgba(255,200,0,0.12); }
+
+  /* Help modal */
+  #help-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+  }
+  #help-modal.visible { display: flex; }
+  #help-box {
+    background: #0a3d56;
+    border: 3px solid #f5c842;
+    border-radius: 20px;
+    width: 780px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #help-header {
+    background: #0d4f6e;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #f5c842;
+    flex-shrink: 0;
+  }
+  #help-header h2 { color: #f5c842; font-size: 22px; }
+  #help-close {
+    background: #f5c842;
+    color: #0d4f6e;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 18px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  #help-close:hover { background: #ffd966; }
+  #help-body {
+    padding: 20px 28px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .help-section h3 {
+    color: #f5c842;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(77,184,212,0.35);
+  }
+  .help-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .help-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(77,184,212,0.3);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .help-card .hc-icon { font-size: 28px; flex-shrink: 0; line-height: 1; }
+  .help-card .hc-body { color: #e0f0ff; font-size: 13px; line-height: 1.5; }
+  .help-card .hc-name { color: #fff; font-weight: bold; font-size: 14px; display: block; margin-bottom: 2px; }
+  .help-card .hc-cost { color: #f5c842; font-size: 12px; }
+  .help-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .help-step {
+    background: rgba(255,255,255,0.06);
+    border-left: 3px solid #4db8d4;
+    border-radius: 0 8px 8px 0;
+    padding: 8px 12px;
+    color: #d0eaff;
+    font-size: 13px;
+    line-height: 1.5;
+  }
   #seashell-hud {
     margin-left: auto;
     display: flex;
@@ -363,6 +466,7 @@
     </div>
     <div id="wave-info">Wave <span id="wave-num">1</span> / 10</div>
     <div id="seashell-hud"></div>
+    <button id="pause-btn" onclick="togglePause()">⏸ Pause</button>
   </div>
 
   <!-- Canvas -->
@@ -431,6 +535,141 @@
 </div>
 
 <div id="drag-ghost">🕸️</div>
+
+<!-- Help / How to Play modal -->
+<div id="help-modal">
+  <div id="help-box">
+    <div id="help-header">
+      <h2>🌊 How to Play Tidewatch</h2>
+      <button id="help-close" onclick="closeHelp()">Got it! ▶</button>
+    </div>
+    <div id="help-body">
+
+      <div class="help-section">
+        <h3>The Basics</h3>
+        <div class="help-steps">
+          <div class="help-step">🖱️ <strong>Drag towers</strong> from the bottom bar onto any <strong>sandy (beige) tile</strong> to place them.</div>
+          <div class="help-step">🛣️ Enemies march along the <strong>coral-coloured path</strong>. Stop them before they reach the sea at the bottom!</div>
+          <div class="help-step">🐚 You have <strong>3 lives</strong>. Each enemy that escapes costs 1 life. Lose all 3 and it's game over.</div>
+          <div class="help-step">🪙 Earn <strong>coins</strong> by destroying trash. Spend them on new towers or upgrades.</div>
+          <div class="help-step">🖱️ <strong>Click a placed tower</strong> to upgrade it or sell it for half its value back.</div>
+          <div class="help-step">⏩ Use the <strong>Send Now</strong> button to skip the countdown and start the next wave early.</div>
+        </div>
+      </div>
+
+      <div class="help-section">
+        <h3>Towers — drag onto sand tiles</h3>
+        <div class="help-grid">
+          <div class="help-card">
+            <span class="hc-icon">🕸️</span>
+            <div class="hc-body">
+              <span class="hc-name">Net Launcher <span class="hc-cost">🪙 50</span></span>
+              Slows all enemies in range by 50%. Doesn't deal damage but lets other towers clean up.
+              <br><em>Upgrades: longer slow duration → bigger range</em>
+            </div>
+          </div>
+          <div class="help-card">
+            <span class="hc-icon">🐦</span>
+            <div class="hc-body">
+              <span class="hc-name">Seagull Squad <span class="hc-cost">🪙 75</span></span>
+              Fast-firing. Targets the nearest enemy and pecks it for 15 damage.
+              <br><em>Upgrades: hits 2 enemies at once → damage increases to 25</em>
+            </div>
+          </div>
+          <div class="help-card">
+            <span class="hc-icon">🐋</span>
+            <div class="hc-body">
+              <span class="hc-name">Whale Spout <span class="hc-cost">🪙 100</span></span>
+              Slow but powerful. Fires a water blast that splashes for 40 AoE damage in a 1-tile radius.
+              <br><em>Upgrades: bigger splash radius → damage increases to 70</em>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="help-section">
+        <h3>Animal Companions — earned from the Clam Roll (unlocks after wave 3)</h3>
+        <div class="help-grid">
+          <div class="help-card">
+            <span class="hc-icon">🐟</span>
+            <div class="hc-body">
+              <span class="hc-name">Swordfish</span>
+              Place on a <strong>sand tile</strong>. Charges at the nearest enemy and deals 60 damage, then vanishes. Great for picking off a tough target.
+            </div>
+          </div>
+          <div class="help-card">
+            <span class="hc-icon">🐙</span>
+            <div class="hc-body">
+              <span class="hc-name">Octopus</span>
+              Place on a <strong>sand tile</strong>. Instantly freezes up to 3 nearby enemies for 3 seconds, then vanishes. Perfect before a big attack.
+            </div>
+          </div>
+          <div class="help-card">
+            <span class="hc-icon">🐡</span>
+            <div class="hc-body">
+              <span class="hc-name">Pufferfish</span>
+              Place on the <strong>path</strong>. Acts as a mine — explodes when an enemy steps on it, dealing 50 damage in a 2-tile radius. Then it's gone.
+            </div>
+          </div>
+          <div class="help-card">
+            <span class="hc-icon">🐢</span>
+            <div class="hc-body">
+              <span class="hc-name">Sea Turtle</span>
+              Place on the <strong>path</strong>. Blocks the first enemy that reaches it and shoves it back 2 tiles, buying you precious time. Then it leaves.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="help-section">
+        <h3>Seashell Powerups — tap the icons in the top-right to use</h3>
+        <div class="help-grid">
+          <div class="help-card">
+            <span class="hc-icon">🌊</span>
+            <div class="hc-body"><span class="hc-name">Tidal Wave</span>Slows every enemy on the path by 60% for 5 seconds.</div>
+          </div>
+          <div class="help-card">
+            <span class="hc-icon">💰</span>
+            <div class="hc-body"><span class="hc-name">Coin Current</span>Doubles all coin drops for the rest of the current wave.</div>
+          </div>
+          <div class="help-card">
+            <span class="hc-icon">🫧</span>
+            <div class="hc-body"><span class="hc-name">Sea Foam</span>Instantly restores 1 lost life.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="help-section">
+        <h3>Enemy Types</h3>
+        <div class="help-grid">
+          <div class="help-card">
+            <span class="hc-icon">🛍️</span>
+            <div class="hc-body"><span class="hc-name">Plastic Bag</span>Fast and fragile. 40 HP. Worth 🪙10. Appears from wave 1.</div>
+          </div>
+          <div class="help-card">
+            <span class="hc-icon">🥤</span>
+            <div class="hc-body"><span class="hc-name">Soda Can</span>Slower but tougher. 120 HP. Worth 🪙20. Appears from wave 2.</div>
+          </div>
+          <div class="help-card">
+            <span class="hc-icon">⭕</span>
+            <div class="hc-body"><span class="hc-name">Old Tire</span>Very tough and slow. 500 HP. Worth 🪙40. Appears from wave 6.</div>
+          </div>
+          <div class="help-card">
+            <span class="hc-icon">🗑️</span>
+            <div class="hc-body"><span class="hc-name">Trash Bag (Boss)</span>Massive. 1200 HP. Worth 🪙100. Spawns 2 plastic bags on death!</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="help-section" style="text-align:center; padding-top:4px; border-top:1px solid rgba(77,184,212,0.25); margin-top:4px;">
+        <p style="color:#7ecde8; font-size:13px; font-style:italic;">
+          Game design by <strong style="color:#fff;">William Henderson</strong> with help from <strong style="color:#fff;">Dad</strong> and <strong style="color:#fff;">Claude</strong> in coding
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 <script>
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -1359,7 +1598,7 @@ function restartGame() {
   updateHUD();
   showStartOverlay();
   lastTime = null;
-  requestAnimationFrame(gameLoop);
+  animFrameId = requestAnimationFrame(gameLoop);
 }
 
 function showStartOverlay() {
@@ -1563,6 +1802,49 @@ function pickUpAnimal(animal) {
 function upgradeTower(tower, idx) { upgradeUnit(tower, 'tower', idx, 0, 0); }
 function sellTower(tower) { sellUnit(tower, 'tower'); }
 
+// ─── Help / Pause ─────────────────────────────────────────────────────────────
+let isPaused = false;
+let animFrameId = null;
+
+function showHelp() {
+  document.getElementById('help-modal').classList.add('visible');
+}
+
+function closeHelp() {
+  document.getElementById('help-modal').classList.remove('visible');
+  if (isPaused) resumeGame();
+}
+
+function togglePause() {
+  if (isPaused) {
+    closeHelp();
+  } else {
+    isPaused = true;
+    if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+    if (countdownInterval) { clearInterval(countdownInterval); }
+    document.getElementById('pause-btn').textContent = '▶ Resume';
+    showHelp();
+  }
+}
+
+function resumeGame() {
+  isPaused = false;
+  document.getElementById('pause-btn').textContent = '⏸ Pause';
+  // Restart countdown if mid-between-wave
+  if (state.phase === 'between' && state.countdownTimer > 0) {
+    countdownInterval = setInterval(() => {
+      state.countdownTimer--;
+      const el = document.getElementById('countdown');
+      if (el) el.textContent = state.countdownTimer;
+      if (state.countdownTimer <= 0) { clearInterval(countdownInterval); startWave(); }
+    }, 1000);
+  }
+  lastTime = null;
+  if (state.phase !== 'gameover' && state.phase !== 'win') {
+    animFrameId = requestAnimationFrame(gameLoop);
+  }
+}
+
 // ─── Main game loop ───────────────────────────────────────────────────────────
 let lastTime = null;
 
@@ -1629,7 +1911,7 @@ function gameLoop(timestamp) {
 
   render();
   if (state.phase !== 'gameover' && state.phase !== 'win') {
-    requestAnimationFrame(gameLoop);
+    animFrameId = requestAnimationFrame(gameLoop);
   } else {
     render();
   }
@@ -1641,7 +1923,8 @@ document.getElementById('send-now-btn').onclick = sendNow;
 initState();
 updateHUD();
 showStartOverlay();
-requestAnimationFrame(gameLoop);
+showHelp(); // show tutorial on first load
+animFrameId = requestAnimationFrame(gameLoop);
 </script>
 </body>
 </html>
