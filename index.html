@@ -45,7 +45,40 @@
   .lives-container { display: flex; gap: 4px; }
   .life { font-size: 22px; }
   .life.lost { opacity: 0.2; }
-  #wave-info { margin-left: auto; font-size: 16px; color: #f5c842; }
+  #wave-info { font-size: 16px; color: #f5c842; }
+  #seashell-hud {
+    margin-left: auto;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .seashell-powerup {
+    font-size: 22px;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 6px;
+    border: 2px solid #4db8d4;
+    background: rgba(0,0,0,0.2);
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
+  }
+  .seashell-powerup:hover { border-color: #f5c842; background: rgba(255,200,0,0.15); }
+  .seashell-powerup .tip {
+    display: none;
+    position: absolute;
+    bottom: 32px;
+    right: 0;
+    background: #0d4f6e;
+    border: 1px solid #4db8d4;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: normal;
+    white-space: nowrap;
+    color: #fff;
+    z-index: 50;
+  }
+  .seashell-powerup:hover .tip { display: block; }
 
   /* Canvas wrapper */
   #canvas-wrapper {
@@ -80,14 +113,16 @@
     gap: 12px;
     border-top: 3px solid #f5c842;
   }
-  #bottom-panel .panel-label {
-    color: #f5c842;
-    font-weight: bold;
-    font-size: 14px;
-    margin-right: 4px;
+  .panel-divider {
+    width: 2px;
+    height: 48px;
+    background: rgba(77,184,212,0.4);
+    border-radius: 2px;
+    flex-shrink: 0;
   }
+  #clam-shop-area { margin-left: auto; }
 
-  .tower-card {
+  .tower-card, .animal-card {
     background: #1a7a9e;
     border: 2px solid #4db8d4;
     border-radius: 8px;
@@ -101,14 +136,39 @@
     min-width: 80px;
     transition: border-color 0.15s, background 0.15s;
   }
-  .tower-card:hover {
+  .tower-card:hover, .animal-card:hover {
     border-color: #f5c842;
     background: #23a0c8;
   }
-  .tower-card.dragging { opacity: 0.5; cursor: grabbing; }
-  .tower-card .tower-icon { font-size: 28px; }
-  .tower-card .tower-name { font-size: 11px; font-weight: bold; text-align: center; }
-  .tower-card .tower-cost { font-size: 12px; color: #f5c842; }
+  .tower-card.dragging, .animal-card.dragging { opacity: 0.5; cursor: grabbing; }
+  .tower-card .tower-icon, .animal-card .animal-icon { font-size: 28px; }
+  .tower-card .tower-name, .animal-card .animal-name { font-size: 11px; font-weight: bold; text-align: center; }
+  .tower-card .tower-cost, .animal-card .animal-level { font-size: 12px; color: #f5c842; }
+
+  /* Clam shop button */
+  #clam-shop-btn {
+    background: #e67e22;
+    border: 2px solid #f39c12;
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    transition: background 0.15s;
+  }
+  #clam-shop-btn:hover:not(:disabled) { background: #f39c12; }
+  #clam-shop-btn:disabled { opacity: 0.45; cursor: default; }
+  #clam-shop-btn .clam-icon { font-size: 26px; }
+  #clam-shop-locked {
+    color: #aaa;
+    font-size: 12px;
+    font-style: italic;
+  }
 
   /* Between-wave overlay */
   #wave-overlay {
@@ -124,7 +184,6 @@
     text-align: center;
     display: none;
     z-index: 10;
-    display: none;
   }
   #wave-overlay h2 { font-size: 20px; color: #f5c842; margin-bottom: 4px; }
   #wave-overlay p { font-size: 15px; margin-bottom: 10px; }
@@ -199,6 +258,94 @@
   #tower-popup button:disabled { opacity: 0.45; cursor: default; }
   #tower-popup .sell-btn { background: #8b1a1a; border-color: #e04040; }
   #tower-popup .sell-btn:hover { background: #b32020; }
+
+  /* Clam modal */
+  #clam-modal {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    flex-direction: column;
+    gap: 16px;
+  }
+  #clam-modal.visible { display: flex; }
+  #clam-box {
+    background: #0d4f6e;
+    border: 3px solid #f5c842;
+    border-radius: 20px;
+    padding: 32px 48px;
+    text-align: center;
+    color: #fff;
+    min-width: 240px;
+  }
+  #clam-shell {
+    font-size: 72px;
+    display: block;
+    margin-bottom: 12px;
+    transition: transform 0.15s;
+  }
+  #clam-shell.shake {
+    animation: clamShake 0.5s ease-in-out;
+  }
+  #clam-result-text {
+    font-size: 18px;
+    color: #f5c842;
+    font-weight: bold;
+    min-height: 28px;
+  }
+  #clam-result-emoji {
+    font-size: 52px;
+    display: block;
+    margin: 8px 0;
+  }
+  #clam-close-btn {
+    margin-top: 14px;
+    background: #f5c842;
+    color: #0d4f6e;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 28px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    display: none;
+  }
+  #clam-close-btn:hover { background: #ffd966; }
+
+  @keyframes clamShake {
+    0%,100% { transform: rotate(0deg); }
+    20% { transform: rotate(-8deg) scale(1.08); }
+    40% { transform: rotate(8deg) scale(1.12); }
+    60% { transform: rotate(-6deg) scale(1.1); }
+    80% { transform: rotate(6deg) scale(1.06); }
+  }
+  @keyframes popIn {
+    0% { transform: scale(0) rotate(-15deg); opacity: 0; }
+    70% { transform: scale(1.2) rotate(5deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+  .pop-in { animation: popIn 0.4s ease-out forwards; }
+
+  /* Powerup active notification */
+  #powerup-notify {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(13,79,110,0.9);
+    border: 2px solid #4db8d4;
+    border-radius: 10px;
+    padding: 6px 18px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+    display: none;
+    z-index: 12;
+    pointer-events: none;
+  }
 </style>
 </head>
 <body>
@@ -208,13 +355,14 @@
   <div id="hud">
     <div class="hud-item">
       <span class="coin-icon">🪙</span>
-      <span id="coin-display">100</span>
+      <span id="coin-display">150</span>
     </div>
     <div class="hud-item">
       <span>Lives:</span>
       <div class="lives-container" id="lives-display"></div>
     </div>
     <div id="wave-info">Wave <span id="wave-num">1</span> / 10</div>
+    <div id="seashell-hud"></div>
   </div>
 
   <!-- Canvas -->
@@ -239,11 +387,22 @@
       <button id="upgrade2-btn"></button>
       <button class="sell-btn" id="sell-btn"></button>
     </div>
+
+    <!-- Clam reveal modal -->
+    <div id="clam-modal">
+      <div id="clam-box">
+        <span id="clam-shell">🦪</span>
+        <span id="clam-result-emoji"></span>
+        <div id="clam-result-text"></div>
+        <button id="clam-close-btn" onclick="closeClamModal()">Awesome!</button>
+      </div>
+    </div>
+
+    <div id="powerup-notify"></div>
   </div>
 
   <!-- Bottom panel -->
   <div id="bottom-panel">
-    <span class="panel-label">TOWERS</span>
     <div class="tower-card" id="card-net" draggable="true" data-tower="net">
       <span class="tower-icon">🕸️</span>
       <span class="tower-name">Net Launcher</span>
@@ -259,6 +418,15 @@
       <span class="tower-name">Whale Spout</span>
       <span class="tower-cost">🪙 100</span>
     </div>
+    <div id="animals-roster"></div>
+    <div id="clam-shop-area">
+      <button id="clam-shop-btn" onclick="openClamShop()" disabled>
+        <span class="clam-icon">🦪</span>
+        <span>Clam Roll</span>
+        <span style="font-size:11px; color:#ffd">🪙 75</span>
+      </button>
+      <div id="clam-shop-locked">Unlocks after wave 3</div>
+    </div>
   </div>
 </div>
 
@@ -270,7 +438,6 @@ const TILE = 64;
 const COLS = 16;
 const ROWS = 12;
 
-// Path: [col, row] waypoints
 const PATH_WAYPOINTS = [
   [3,0],[3,1],[3,2],[3,3],[3,4],
   [4,4],[5,4],[6,4],[7,4],
@@ -283,15 +450,15 @@ const PATH_WAYPOINTS = [
   [14,4],[14,5],[14,6],[14,7],[14,8],[14,9],[14,10],[14,11]
 ];
 
-// Build a set of path tile keys for quick lookup
 const PATH_SET = new Set(PATH_WAYPOINTS.map(([c,r]) => `${c},${r}`));
 
-// Water border: cols 0,15 and rows 0,11 corners — define water region
+// Build path index map: "col,row" -> waypoint index
+const PATH_INDEX_MAP = new Map(PATH_WAYPOINTS.map(([c,r], i) => [`${c},${r}`, i]));
+
 function isWater(col, row) {
   return col === 0 || col === 15 || row === 0 || row === 11;
 }
 
-// Wave definitions (Sprint 1: only plastic bags)
 const WAVES = [
   { enemies: [{type:'bag', count:8}] },
   { enemies: [{type:'bag', count:12}] },
@@ -316,7 +483,7 @@ const TOWER_DEFS = {
   net: {
     name: 'Net Launcher', cost: 50, range: 2.5,
     damage: 0, slowAmount: 0.5, slowDuration: 2000,
-    fireRate: 0, // slows only, fires every 2s (handled in updateTowers)
+    fireRate: 0,
     emoji: '🕸️', color: '#4db8d4',
     upgrades: [
       { label: 'Slow Duration +2s', cost: 50, apply: t => { t.slowDuration = 4000; } },
@@ -325,7 +492,7 @@ const TOWER_DEFS = {
   },
   seagull: {
     name: 'Seagull Squad', cost: 75, range: 2,
-    damage: 15, fireRate: 1.75, // shots/sec → cooldown = 571ms
+    damage: 15, fireRate: 1.75,
     emoji: '🐦', color: '#f9a825',
     upgrades: [
       { label: 'Targets 2 enemies', cost: 50, apply: t => { t.multiTarget = 2; } },
@@ -334,13 +501,57 @@ const TOWER_DEFS = {
   },
   whale: {
     name: 'Whale Spout', cost: 100, range: 3,
-    damage: 40, fireRate: 0.5, aoeRadius: 1, // shots/sec → cooldown = 2000ms
+    damage: 40, fireRate: 0.5, aoeRadius: 1,
     emoji: '🐋', color: '#7e57c2',
     upgrades: [
       { label: 'AoE Radius: 1 → 2 tiles', cost: 50, apply: t => { t.aoeRadius = 2; } },
       { label: 'Damage: 40 → 70', cost: 100, apply: t => { t.damage = 70; } },
     ]
   },
+};
+
+const ANIMAL_DEFS = {
+  swordfish: {
+    name: 'Swordfish', emoji: '🐟', color: '#2979ff',
+    range: 3, baseCooldown: 3000,
+    upgrades: [
+      { label: 'Damage: 60 → 90', cost: 50, apply: a => { a.damage = 90; } },
+      { label: 'Pierces 2 enemies', cost: 100, apply: a => { a.pierce = 2; } },
+    ]
+  },
+  octopus: {
+    name: 'Octopus', emoji: '🐙', color: '#7b1fa2',
+    range: 2, baseCooldown: 6000,
+    upgrades: [
+      { label: 'Hold: 3s → 5s', cost: 50, apply: a => { a.holdDuration = 5000; } },
+      { label: 'Grabs up to 5', cost: 100, apply: a => { a.grabCount = 5; } },
+    ]
+  },
+  pufferfish: {
+    name: 'Pufferfish', emoji: '🐡', color: '#f57c00',
+    range: 0, baseCooldown: 0,
+    canPlaceOnPath: true,
+    upgrades: [
+      { label: 'Damage: 50 → 80', cost: 50, apply: a => { a.damage = 80; } },
+      { label: 'Radius +50%', cost: 100, apply: a => { a.aoeRadius = 3; } },
+    ]
+  },
+  seaTurtle: {
+    name: 'Sea Turtle', emoji: '🐢', color: '#388e3c',
+    range: 0, baseCooldown: 0,
+    canPlaceOnPath: true,
+    upgrades: [
+      { label: 'HP: 150 → 250', cost: 50, apply: a => { a.maxHp = 250; a.hp = Math.min(a.hp + 100, 250); } },
+      { label: 'Push-back: 2 → 4', cost: 100, apply: a => { a.pushBackDist = 4; } },
+    ]
+  },
+};
+
+const POWERUP_TYPES = ['tidalWave', 'coinCurrent', 'seaFoam'];
+const POWERUP_DEFS = {
+  tidalWave:   { emoji: '🌊', name: 'Tidal Wave',   desc: 'Slows all enemies 60% for 5s' },
+  coinCurrent: { emoji: '💰', name: 'Coin Current', desc: 'Double coins for this wave' },
+  seaFoam:     { emoji: '🫧', name: 'Sea Foam',     desc: 'Restore 1 lost life' },
 };
 
 // ─── Game state ───────────────────────────────────────────────────────────────
@@ -350,17 +561,25 @@ function initState() {
   state = {
     coins: 150,
     lives: 3,
-    wave: 0,           // 0-indexed; current wave being played
-    phase: 'between',  // 'between' | 'spawning' | 'wave' | 'gameover' | 'win'
+    wave: 0,
+    phase: 'between',
     towers: [],
     enemies: [],
     projectiles: [],
+    animalProjectiles: [],
+    placedAnimals: [],
     spawnQueue: [],
     spawnTimer: 0,
     countdownTimer: 0,
     selectedTower: null,
+    selectedAnimal: null,
     totalCoinsEarned: 0,
     waveEndDelay: -1,
+    animalCollection: { swordfish: 0, octopus: 0, pufferfish: 0, seaTurtle: 0 },
+    seashells: [],   // array of powerup type strings, max 3
+    clamShopUnlocked: false,
+    tidalWaveTimer: 0,
+    coinCurrentActive: false,
   };
 }
 
@@ -376,20 +595,18 @@ function drawGrid() {
       const key = `${c},${r}`;
       let color;
       if (PATH_SET.has(key)) {
-        color = '#c9956e'; // coral/sandy path
+        color = '#c9956e';
       } else if (isWater(c, r)) {
-        color = '#2196a8'; // teal water
+        color = '#2196a8';
       } else {
-        color = '#e8d5a3'; // sandy buildable
+        color = '#e8d5a3';
       }
       ctx.fillStyle = color;
       ctx.fillRect(x, y, TILE, TILE);
-      // subtle grid line
       ctx.strokeStyle = 'rgba(0,0,0,0.08)';
       ctx.strokeRect(x, y, TILE, TILE);
     }
   }
-  // Water wave accent lines
   ctx.strokeStyle = 'rgba(255,255,255,0.15)';
   ctx.lineWidth = 2;
   for (let r = 0; r < ROWS; r++) {
@@ -407,36 +624,68 @@ function drawGrid() {
   ctx.lineWidth = 1;
 }
 
+function drawUnit(col, row, emoji, circleColor, isSelected, upgradeLevel, extraLabel) {
+  const cx = col * TILE + TILE/2;
+  const cy = row * TILE + TILE/2;
+
+  ctx.fillStyle = isSelected ? '#f5c842' : circleColor;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 22, 0, Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.lineWidth = 1;
+
+  ctx.fillStyle = '#000';
+  ctx.font = '28px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(emoji, cx, cy + 1);
+
+  if (upgradeLevel > 0) {
+    ctx.fillStyle = '#f5c842';
+    for (let i = 0; i < upgradeLevel; i++) {
+      ctx.beginPath();
+      ctx.arc(cx - 8 + i * 8, cy + 26, 3, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  if (extraLabel) {
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(extraLabel, cx, cy + 28);
+  }
+}
+
 function drawTowers() {
   for (const t of state.towers) {
-    const cx = t.col * TILE + TILE/2;
-    const cy = t.row * TILE + TILE/2;
+    drawUnit(t.col, t.row, TOWER_DEFS[t.type].emoji, TOWER_DEFS[t.type].color,
+             t === state.selectedTower, t.upgradeLevel, null);
+  }
+}
 
-    // Base circle
-    ctx.fillStyle = t === state.selectedTower ? '#f5c842' : TOWER_DEFS[t.type].color;
-    ctx.beginPath();
-    ctx.arc(cx, cy, 22, 0, Math.PI*2);
-    ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.lineWidth = 1;
-
-    // Emoji
-    ctx.font = '28px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(TOWER_DEFS[t.type].emoji, cx, cy + 1);
-
-    // Upgrade dots
-    if (t.upgradeLevel > 0) {
-      ctx.fillStyle = '#f5c842';
-      for (let i = 0; i < t.upgradeLevel; i++) {
-        ctx.beginPath();
-        ctx.arc(cx - 8 + i * 8, cy + 26, 3, 0, Math.PI*2);
-        ctx.fill();
-      }
+function drawAnimals() {
+  for (const a of state.placedAnimals) {
+    const def = ANIMAL_DEFS[a.type];
+    // Sea turtle HP bar
+    let extraLabel = null;
+    if (a.type === 'seaTurtle') {
+      const pct = a.hp / a.maxHp;
+      const cx = a.col * TILE + TILE/2;
+      const cy = a.row * TILE + TILE/2;
+      // Draw HP bar above unit
+      const barW = 36, barH = 4;
+      ctx.fillStyle = '#333';
+      ctx.fillRect(cx - barW/2, cy - 30, barW, barH);
+      ctx.fillStyle = pct > 0.5 ? '#4caf50' : pct > 0.25 ? '#ff9800' : '#f44336';
+      ctx.fillRect(cx - barW/2, cy - 30, barW * pct, barH);
     }
+    drawUnit(a.col, a.row, def.emoji, def.color,
+             a === state.selectedAnimal, a.upgradeLevel, null);
   }
 }
 
@@ -446,32 +695,32 @@ function drawEnemies() {
     const def = ENEMY_DEFS[e.type];
     const sz = e.type === 'boss' ? 44 : 32;
 
-    // Shadow
     ctx.fillStyle = 'rgba(0,0,0,0.2)';
     ctx.beginPath();
     ctx.ellipse(e.x, e.y + sz/2 - 4, sz/2 - 2, 6, 0, 0, Math.PI*2);
     ctx.fill();
 
-    // Slow tint
     if (e.slowTimer > 0) {
       ctx.fillStyle = 'rgba(100,180,255,0.35)';
       ctx.beginPath();
       ctx.arc(e.x, e.y, sz/2 + 4, 0, Math.PI*2);
       ctx.fill();
     }
+    if (e.frozenTimer > 0) {
+      ctx.fillStyle = 'rgba(150,220,255,0.55)';
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, sz/2 + 6, 0, Math.PI*2);
+      ctx.fill();
+    }
 
-    // Emoji
     ctx.fillStyle = '#000';
     ctx.font = `${sz}px serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(def.emoji, e.x, e.y);
 
-    // HP bar
-    const barW = sz + 4;
-    const barH = 5;
-    const bx = e.x - barW/2;
-    const by = e.y - sz/2 - 10;
+    const barW = sz + 4, barH = 5;
+    const bx = e.x - barW/2, by = e.y - sz/2 - 10;
     ctx.fillStyle = '#333';
     ctx.fillRect(bx, by, barW, barH);
     const pct = e.hp / e.maxHp;
@@ -492,23 +741,33 @@ function drawProjectiles() {
     ctx.arc(p.x, p.y, 3, 0, Math.PI*2);
     ctx.fill();
   }
+  for (const p of state.animalProjectiles) {
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 6, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#2979ff';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
+    ctx.fill();
+  }
 }
 
 function drawRangePreview() {
-  // Show range ring for selected tower
-  if (state.selectedTower) {
-    const t = state.selectedTower;
-    const cx = t.col * TILE + TILE/2;
-    const cy = t.row * TILE + TILE/2;
-    ctx.strokeStyle = 'rgba(245,200,66,0.5)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([6,4]);
-    ctx.beginPath();
-    ctx.arc(cx, cy, t.range * TILE, 0, Math.PI*2);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.lineWidth = 1;
-  }
+  const unit = state.selectedTower || state.selectedAnimal;
+  if (!unit) return;
+  const range = unit.range;
+  if (!range) return;
+  const cx = unit.col * TILE + TILE/2;
+  const cy = unit.row * TILE + TILE/2;
+  ctx.strokeStyle = 'rgba(245,200,66,0.5)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6,4]);
+  ctx.beginPath();
+  ctx.arc(cx, cy, range * TILE, 0, Math.PI*2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.lineWidth = 1;
 }
 
 function render() {
@@ -516,6 +775,7 @@ function render() {
   drawGrid();
   drawRangePreview();
   drawTowers();
+  drawAnimals();
   drawEnemies();
   drawProjectiles();
 }
@@ -532,17 +792,89 @@ function updateHUD() {
     span.textContent = '🐚';
     livesEl.appendChild(span);
   }
+  updateSeashellHUD();
+  updateAnimalsPanel();
+  updateClamShopBtn();
+}
+
+function updateSeashellHUD() {
+  const hud = document.getElementById('seashell-hud');
+  hud.innerHTML = '';
+  for (let i = 0; i < state.seashells.length; i++) {
+    const type = state.seashells[i];
+    const def = POWERUP_DEFS[type];
+    const idx = i;
+    const btn = document.createElement('div');
+    btn.className = 'seashell-powerup';
+    btn.innerHTML = `${def.emoji}<span class="tip">${def.name}: ${def.desc}</span>`;
+    btn.onclick = () => activatePowerup(idx);
+    hud.appendChild(btn);
+  }
+}
+
+function updateAnimalsPanel() {
+  const roster = document.getElementById('animals-roster');
+  roster.innerHTML = '';
+  roster.style.display = 'flex';
+  roster.style.alignItems = 'center';
+  roster.style.gap = '12px';
+  const animalKeys = Object.keys(state.animalCollection);
+  let hasAny = false;
+  for (const key of animalKeys) {
+    const charges = state.animalCollection[key];
+    if (charges === 0) continue;
+    if (!hasAny) {
+      // Divider before first animal
+      const div = document.createElement('div');
+      div.className = 'panel-divider';
+      roster.appendChild(div);
+      hasAny = true;
+    }
+    const def = ANIMAL_DEFS[key];
+    const card = document.createElement('div');
+    card.className = 'animal-card';
+    card.draggable = true;
+    card.dataset.animal = key;
+    card.innerHTML = `
+      <span class="animal-icon">${def.emoji}</span>
+      <span class="animal-name">${def.name}</span>
+      <span class="animal-level">×${charges}</span>
+    `;
+    card.addEventListener('dragstart', e => {
+      dragAnimalType = key;
+      card.classList.add('dragging');
+      ghost.style.display = 'block';
+      ghost.textContent = def.emoji;
+      e.dataTransfer.setDragImage(new Image(), 0, 0);
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      ghost.style.display = 'none';
+      dragAnimalType = null;
+    });
+    roster.appendChild(card);
+  }
+}
+
+function updateClamShopBtn() {
+  const btn = document.getElementById('clam-shop-btn');
+  const locked = document.getElementById('clam-shop-locked');
+  if (!state.clamShopUnlocked) {
+    btn.style.display = 'none';
+    locked.style.display = 'block';
+    return;
+  }
+  btn.style.display = 'flex';
+  locked.style.display = 'none';
+  btn.disabled = state.coins < 75;
 }
 
 // ─── Wave management ──────────────────────────────────────────────────────────
 function buildSpawnQueue(waveDef) {
   const queue = [];
   for (const group of waveDef.enemies) {
-    for (let i = 0; i < group.count; i++) {
-      queue.push(group.type);
-    }
+    for (let i = 0; i < group.count; i++) queue.push(group.type);
   }
-  // Shuffle slightly so mixed waves feel organic
   for (let i = queue.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i+1));
     [queue[i], queue[j]] = [queue[j], queue[i]];
@@ -573,6 +905,8 @@ function spawnEnemy(type, waypointIndex = 0) {
     waypointIndex,
     progress: 0,
     slowTimer: 0,
+    frozenTimer: 0,
+    pushbackCooldown: 0,
     dead: false,
     reached: false,
   });
@@ -583,18 +917,22 @@ function moveEnemies(dt) {
   for (const e of state.enemies) {
     if (e.dead || e.reached) continue;
 
-    const effectiveSpeed = e.slowTimer > 0
-      ? e.speed * 0.5   // net launcher slow
-      : e.speed;
-
-    const pixelsPerSec = effectiveSpeed * TILE;
-    let dist = pixelsPerSec * dt;
+    e.frozenTimer = Math.max(0, e.frozenTimer - dt * 1000);
     e.slowTimer = Math.max(0, e.slowTimer - dt * 1000);
+    e.pushbackCooldown = Math.max(0, e.pushbackCooldown - dt * 1000);
+
+    if (e.frozenTimer > 0) continue; // completely frozen by octopus
+
+    let speedMult = 1;
+    if (e.slowTimer > 0) speedMult = Math.min(speedMult, 0.5);
+    if (state.tidalWaveTimer > 0) speedMult = Math.min(speedMult, 0.4);
+
+    const pixelsPerSec = e.speed * speedMult * TILE;
+    let dist = pixelsPerSec * dt;
 
     while (dist > 0 && e.waypointIndex < PATH_WAYPOINTS.length - 1) {
       const [tc, tr] = PATH_WAYPOINTS[e.waypointIndex + 1];
-      const tx = tc * TILE + TILE/2;
-      const ty = tr * TILE + TILE/2;
+      const tx = tc * TILE + TILE/2, ty = tr * TILE + TILE/2;
       const dx = tx - e.x, dy = ty - e.y;
       const remaining = Math.sqrt(dx*dx + dy*dy);
       if (dist >= remaining) {
@@ -623,21 +961,17 @@ function updateTowers(dt) {
     t.cooldown = Math.max(0, t.cooldown - dt * 1000);
     if (t.cooldown > 0) continue;
 
-    // Find nearest living enemy in range
     const cx = t.col * TILE + TILE/2;
     const cy = t.row * TILE + TILE/2;
     let nearest = null, nearestDist = Infinity;
     for (const e of state.enemies) {
       if (e.dead || e.reached) continue;
       const d = Math.hypot(e.x - cx, e.y - cy);
-      if (d <= t.range * TILE && d < nearestDist) {
-        nearest = e; nearestDist = d;
-      }
+      if (d <= t.range * TILE && d < nearestDist) { nearest = e; nearestDist = d; }
     }
     if (!nearest) continue;
 
     if (t.type === 'net') {
-      // Slow all enemies within range
       for (const e of state.enemies) {
         if (e.dead || e.reached) continue;
         if (Math.hypot(e.x - cx, e.y - cy) <= t.range * TILE) e.slowTimer = t.slowDuration;
@@ -656,24 +990,22 @@ function updateTowers(dt) {
       for (const target of targets) {
         state.projectiles.push({ x: cx, y: cy, target, damage: t.damage, speed: 400, type: 'seagull' });
       }
-      t.cooldown = 571; // 1.75 shots/sec
+      t.cooldown = 571;
     } else if (t.type === 'whale') {
       state.projectiles.push({ x: cx, y: cy, target: nearest, damage: t.damage, aoeRadius: t.aoeRadius, speed: 250, type: 'whale' });
-      t.cooldown = 2000; // 0.5 shots/sec
+      t.cooldown = 2000;
     }
   }
 }
 
 function updateProjectiles(dt) {
   state.projectiles = state.projectiles.filter(p => {
-    // Track living target position for seagull/whale; net uses fixed tx/ty
     const tx = p.target ? p.target.x : p.tx;
     const ty = p.target ? p.target.y : p.ty;
     const dx = tx - p.x, dy = ty - p.y;
     const dist = Math.sqrt(dx*dx + dy*dy);
     const step = p.speed * dt;
     if (step >= dist || dist < 6) {
-      // Hit — apply damage on arrival
       if (p.target && !p.target.dead && !p.target.reached) {
         if (p.type === 'whale') {
           for (const e of state.enemies) {
@@ -695,6 +1027,275 @@ function updateProjectiles(dt) {
   });
 }
 
+// ─── Animal logic ─────────────────────────────────────────────────────────────
+function makeAnimal(type, col, row) {
+  const def = ANIMAL_DEFS[type];
+  const a = {
+    type, col, row,
+    range: def.range,
+    cooldown: 0,
+    upgradeLevel: 0,
+    totalSpent: 0,
+    spent: false, // true after single-use ability fires
+  };
+  if (type === 'swordfish') {
+    a.damage = 60;
+    a.pierce = 1;
+  } else if (type === 'octopus') {
+    a.holdDuration = 3000;
+    a.grabCount = 3;
+  } else if (type === 'pufferfish') {
+    a.damage = 50;
+    a.aoeRadius = 2;
+    a.pathIndex = PATH_INDEX_MAP.get(`${col},${row}`) ?? -1;
+  } else if (type === 'seaTurtle') {
+    a.hp = 150;
+    a.maxHp = 150;
+    a.pushBackDist = 2;
+    a.pathIndex = PATH_INDEX_MAP.get(`${col},${row}`) ?? -1;
+  }
+  return a;
+}
+
+function updateAnimals(dt) {
+  for (const a of state.placedAnimals) {
+    a.cooldown = Math.max(0, a.cooldown - dt * 1000);
+
+    if (a.type === 'seaTurtle') {
+      // Push back the first enemy that reaches the turtle's path tile, then vanish
+      if (a.pathIndex < 0) continue;
+      for (const e of state.enemies) {
+        if (e.dead || e.reached || e.pushbackCooldown > 0) continue;
+        if (e.waypointIndex >= a.pathIndex) {
+          const newIdx = Math.max(0, a.pathIndex - a.pushBackDist);
+          e.waypointIndex = newIdx;
+          const [bc, br] = PATH_WAYPOINTS[newIdx];
+          e.x = bc * TILE + TILE/2;
+          e.y = br * TILE + TILE/2;
+          e.pushbackCooldown = 3000;
+          a.spent = true;
+          break;
+        }
+      }
+      continue;
+    }
+
+    if (a.cooldown > 0) continue;
+
+    const cx = a.col * TILE + TILE/2;
+    const cy = a.row * TILE + TILE/2;
+
+    if (a.type === 'swordfish') {
+      let targets = [];
+      for (const e of state.enemies) {
+        if (e.dead || e.reached) continue;
+        const d = Math.hypot(e.x - cx, e.y - cy);
+        if (d <= a.range * TILE) targets.push({ e, d });
+      }
+      targets.sort((a, b) => a.d - b.d);
+      const pierceCount = a.pierce || 1;
+      const hit = targets.slice(0, pierceCount);
+      if (hit.length === 0) continue;
+      for (const { e } of hit) {
+        state.animalProjectiles.push({ x: cx, y: cy, target: e, damage: a.damage, speed: 500 });
+      }
+      a.spent = true;
+
+    } else if (a.type === 'octopus') {
+      let candidates = [];
+      for (const e of state.enemies) {
+        if (e.dead || e.reached) continue;
+        const d = Math.hypot(e.x - cx, e.y - cy);
+        if (d <= a.range * TILE) candidates.push({ e, d });
+      }
+      candidates.sort((x, y) => x.d - y.d);
+      const grabbed = candidates.slice(0, a.grabCount);
+      if (grabbed.length === 0) continue;
+      for (const { e } of grabbed) e.frozenTimer = a.holdDuration;
+      a.spent = true;
+
+    } else if (a.type === 'pufferfish') {
+      // Explodes when an enemy steps on its path tile
+      if (a.pathIndex < 0) continue;
+      const triggered = state.enemies.some(e => !e.dead && !e.reached && e.waypointIndex >= a.pathIndex);
+      if (!triggered) continue;
+      // AoE explosion from pufferfish center
+      const px = a.col * TILE + TILE/2;
+      const py = a.row * TILE + TILE/2;
+      for (const e of state.enemies) {
+        if (e.dead || e.reached) continue;
+        if (Math.hypot(e.x - px, e.y - py) <= a.aoeRadius * TILE) {
+          e.hp -= a.damage;
+          if (e.hp <= 0) e.dead = true;
+        }
+      }
+      a.spent = true;
+    }
+  }
+  // Remove spent animals
+  state.placedAnimals = state.placedAnimals.filter(a => !a.spent);
+
+  // Move animal projectiles (swordfish)
+  state.animalProjectiles = state.animalProjectiles.filter(p => {
+    if (!p.target || p.target.dead || p.target.reached) return false;
+    const dx = p.target.x - p.x, dy = p.target.y - p.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const step = p.speed * dt;
+    if (step >= dist || dist < 6) {
+      p.target.hp -= p.damage;
+      if (p.target.hp <= 0) p.target.dead = true;
+      return false;
+    }
+    p.x += (dx/dist)*step; p.y += (dy/dist)*step;
+    return true;
+  });
+}
+
+// ─── Animal placement ─────────────────────────────────────────────────────────
+let dragAnimalType = null;
+
+canvas.addEventListener('drop', e => {
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const col = Math.floor((e.clientX - rect.left) / TILE);
+  const row = Math.floor((e.clientY - rect.top) / TILE);
+  if (dragTowerType) {
+    placeTower(dragTowerType, col, row);
+    dragTowerType = null;
+  } else if (dragAnimalType) {
+    placeAnimal(dragAnimalType, col, row);
+    dragAnimalType = null;
+  }
+  ghost.style.display = 'none';
+});
+
+function placeAnimal(type, col, row) {
+  if ((state.animalCollection[type] || 0) === 0) return;
+  const def = ANIMAL_DEFS[type];
+  const key = `${col},${row}`;
+
+  if (isWater(col, row)) return;
+  if (col < 0 || col >= COLS || row < 0 || row >= ROWS) return;
+
+  // Sea turtle and pufferfish go on path tiles; others cannot
+  if (!def.canPlaceOnPath && PATH_SET.has(key)) return;
+  if (def.canPlaceOnPath && !PATH_SET.has(key)) return;
+
+  // No stacking with towers or other animals
+  if (state.towers.find(t => t.col === col && t.row === row)) return;
+  if (state.placedAnimals.find(a => a.col === col && a.row === row)) return;
+
+  state.animalCollection[type]--;
+  const animal = makeAnimal(type, col, row);
+  state.placedAnimals.push(animal);
+  updateHUD();
+  closePopup();
+}
+
+// ─── Clam shop ────────────────────────────────────────────────────────────────
+function openClamShop() {
+  if (!state.clamShopUnlocked || state.coins < 75) return;
+  state.coins -= 75;
+  updateHUD();
+
+  const modal = document.getElementById('clam-modal');
+  const shell = document.getElementById('clam-shell');
+  const resultEmoji = document.getElementById('clam-result-emoji');
+  const resultText = document.getElementById('clam-result-text');
+  const closeBtn = document.getElementById('clam-close-btn');
+
+  resultEmoji.textContent = '';
+  resultEmoji.className = '';
+  resultText.textContent = 'Opening...';
+  closeBtn.style.display = 'none';
+  shell.textContent = '🦪';
+  shell.className = '';
+
+  modal.classList.add('visible');
+
+  // Phase 1: shake
+  setTimeout(() => {
+    shell.classList.add('shake');
+  }, 100);
+
+  // Phase 2: crack open (change emoji)
+  setTimeout(() => {
+    shell.textContent = '✨';
+  }, 700);
+
+  // Phase 3: reveal result
+  setTimeout(() => {
+    shell.style.display = 'none';
+    const result = rollClam();
+    resultEmoji.textContent = result.emoji;
+    resultEmoji.className = 'pop-in';
+    resultText.textContent = result.label;
+    closeBtn.style.display = 'inline-block';
+    updateHUD();
+  }, 1100);
+}
+
+function rollClam() {
+  // 50% animal, 50% seashell
+  if (Math.random() < 0.5) {
+    return rollAnimal();
+  } else {
+    return rollSeashell();
+  }
+}
+
+function rollAnimal() {
+  const types = Object.keys(state.animalCollection);
+  const type = types[Math.floor(Math.random() * types.length)];
+  const def = ANIMAL_DEFS[type];
+  state.animalCollection[type]++;
+  return { emoji: def.emoji, label: `${def.name}! (×${state.animalCollection[type]} charges)` };
+}
+
+function rollSeashell() {
+  const type = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)];
+  const def = POWERUP_DEFS[type];
+  if (state.seashells.length < 3) {
+    state.seashells.push(type);
+  }
+  return { emoji: def.emoji, label: `${def.name}! ${state.seashells.length >= 3 ? '(inventory full)' : ''}` };
+}
+
+function closeClamModal() {
+  const modal = document.getElementById('clam-modal');
+  modal.classList.remove('visible');
+  document.getElementById('clam-shell').style.display = 'block';
+  document.getElementById('clam-shell').className = '';
+}
+
+// ─── Seashell powerups ────────────────────────────────────────────────────────
+function activatePowerup(idx) {
+  if (idx >= state.seashells.length) return;
+  const type = state.seashells[idx];
+  state.seashells.splice(idx, 1);
+
+  const def = POWERUP_DEFS[type];
+  if (type === 'tidalWave') {
+    state.tidalWaveTimer = 5;
+    showPowerupNotify(`🌊 Tidal Wave! Enemies slowed 60% for 5s`);
+  } else if (type === 'coinCurrent') {
+    state.coinCurrentActive = true;
+    showPowerupNotify(`💰 Coin Current! Double coins for this wave`);
+  } else if (type === 'seaFoam') {
+    if (state.lives < 3) state.lives++;
+    showPowerupNotify(`🫧 Sea Foam! Life restored`);
+  }
+
+  updateHUD();
+}
+
+function showPowerupNotify(msg) {
+  const el = document.getElementById('powerup-notify');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+
 // ─── Wave completion check ────────────────────────────────────────────────────
 function checkWaveEnd() {
   if (state.phase !== 'spawning' && state.phase !== 'wave') return;
@@ -702,9 +1303,7 @@ function checkWaveEnd() {
   const allGone = state.enemies.every(e => e.dead || e.reached);
   const noPendingProjectiles = state.projectiles.every(p => p.type === 'net' || !p.target || p.target.dead || p.target.reached);
   if (allSpawned && allGone && noPendingProjectiles) {
-    if (state.waveEndDelay < 0) {
-      state.waveEndDelay = 1.5; // seconds to wait before ending wave
-    }
+    if (state.waveEndDelay < 0) state.waveEndDelay = 1.5;
   }
 }
 
@@ -739,20 +1338,18 @@ function hideOverlay() {
 function triggerGameOver() {
   if (state.phase === 'gameover') return;
   state.phase = 'gameover';
-  const es = document.getElementById('end-screen');
   document.getElementById('end-title').textContent = '🌊 The ocean needs you!';
   document.getElementById('end-msg').textContent =
     `You reached wave ${state.wave + 1}. Coins collected: ${state.totalCoinsEarned}`;
-  es.style.display = 'block';
+  document.getElementById('end-screen').style.display = 'block';
 }
 
 function triggerWin() {
   state.phase = 'win';
-  const es = document.getElementById('end-screen');
   document.getElementById('end-title').textContent = '🎉 Ocean Saved!';
   document.getElementById('end-msg').textContent =
     `All 10 waves cleared! Total coins: ${state.totalCoinsEarned}`;
-  es.style.display = 'block';
+  document.getElementById('end-screen').style.display = 'block';
 }
 
 function restartGame() {
@@ -774,7 +1371,6 @@ function showStartOverlay() {
   document.getElementById('send-now-btn').onclick = () => {
     document.getElementById('send-now-btn').textContent = 'Send Now ▶';
     document.getElementById('send-now-btn').onclick = sendNow;
-    // Show countdown so player can still place towers before wave 1 begins
     document.getElementById('overlay-title').textContent = 'Wave 1 Starting!';
     document.getElementById('overlay-msg').innerHTML = 'Wave starts in <span id="countdown">10</span>s';
     state.countdownTimer = 10;
@@ -825,17 +1421,6 @@ document.addEventListener('dragover', e => {
 
 canvas.addEventListener('dragover', e => { e.preventDefault(); });
 
-canvas.addEventListener('drop', e => {
-  e.preventDefault();
-  if (!dragTowerType) return;
-  const rect = canvas.getBoundingClientRect();
-  const col = Math.floor((e.clientX - rect.left) / TILE);
-  const row = Math.floor((e.clientY - rect.top) / TILE);
-  placeTower(dragTowerType, col, row);
-  dragTowerType = null;
-  ghost.style.display = 'none';
-});
-
 function placeTower(type, col, row) {
   const def = TOWER_DEFS[type];
   if (state.coins < def.cost) return;
@@ -844,11 +1429,11 @@ function placeTower(type, col, row) {
   if (isWater(col, row)) return;
   if (col < 0 || col >= COLS || row < 0 || row >= ROWS) return;
   if (state.towers.find(t => t.col === col && t.row === row)) return;
+  if (state.placedAnimals.find(a => a.col === col && a.row === row)) return;
 
   state.coins -= def.cost;
   state.towers.push({
-    type,
-    col, row,
+    type, col, row,
     range: def.range,
     damage: def.damage,
     slowDuration: def.slowDuration || 2000,
@@ -862,7 +1447,7 @@ function placeTower(type, col, row) {
   closePopup();
 }
 
-// ─── Tower click & popup ──────────────────────────────────────────────────────
+// ─── Click: towers & animals ──────────────────────────────────────────────────
 canvas.addEventListener('click', e => {
   const rect = canvas.getBoundingClientRect();
   const mx = e.clientX - rect.left;
@@ -871,114 +1456,146 @@ canvas.addEventListener('click', e => {
   const row = Math.floor(my / TILE);
 
   const tower = state.towers.find(t => t.col === col && t.row === row);
+  const animal = state.placedAnimals.find(a => a.col === col && a.row === row);
   if (tower) {
     state.selectedTower = tower;
-    openPopup(tower, e.clientX, e.clientY);
+    state.selectedAnimal = null;
+    openPopup(tower, 'tower', e.clientX, e.clientY);
+  } else if (animal) {
+    state.selectedAnimal = animal;
+    state.selectedTower = null;
+    openPopup(animal, 'animal', e.clientX, e.clientY);
   } else {
     closePopup();
   }
 });
 
-function openPopup(tower, cx, cy) {
+function openPopup(unit, kind, cx, cy) {
   const popup = document.getElementById('tower-popup');
-  const def = TOWER_DEFS[tower.type];
-  document.getElementById('popup-title').textContent = def.name + (tower.upgradeLevel > 0 ? ` (Lv${tower.upgradeLevel+1})` : '');
+  const def = kind === 'tower' ? TOWER_DEFS[unit.type] : ANIMAL_DEFS[unit.type];
+  document.getElementById('popup-title').textContent =
+    def.name + (unit.upgradeLevel > 0 ? ` (Lv${unit.upgradeLevel+1})` : '');
 
   const upgrades = def.upgrades;
   const u1 = document.getElementById('upgrade1-btn');
   const u2 = document.getElementById('upgrade2-btn');
 
-  if (tower.upgradeLevel === 0 && upgrades[0]) {
-    u1.style.display = 'block';
-    u1.textContent = `Upgrade: ${upgrades[0].label} (🪙${upgrades[0].cost})`;
-    u1.disabled = state.coins < upgrades[0].cost;
-    u1.onclick = () => upgradeTower(tower, 0);
+  if (kind === 'tower') {
+    if (unit.upgradeLevel === 0 && upgrades[0]) {
+      u1.style.display = 'block';
+      u1.textContent = `Upgrade: ${upgrades[0].label} (🪙${upgrades[0].cost})`;
+      u1.disabled = state.coins < upgrades[0].cost;
+      u1.onclick = () => upgradeUnit(unit, kind, 0, cx, cy);
+    } else {
+      u1.style.display = 'none';
+    }
+    if (unit.upgradeLevel === 1 && upgrades[1]) {
+      u2.style.display = 'block';
+      u2.textContent = `Upgrade: ${upgrades[1].label} (🪙${upgrades[1].cost})`;
+      u2.disabled = state.coins < upgrades[1].cost;
+      u2.onclick = () => upgradeUnit(unit, kind, 1, cx, cy);
+    } else {
+      u2.style.display = 'none';
+    }
   } else {
+    // Animals: no upgrades, just pick up
     u1.style.display = 'none';
-  }
-
-  if (tower.upgradeLevel === 1 && upgrades[1]) {
-    u2.style.display = 'block';
-    u2.textContent = `Upgrade: ${upgrades[1].label} (🪙${upgrades[1].cost})`;
-    u2.disabled = state.coins < upgrades[1].cost;
-    u2.onclick = () => upgradeTower(tower, 1);
-  } else {
     u2.style.display = 'none';
   }
 
-  const sellVal = Math.floor(tower.totalSpent * 0.5);
   const sellBtn = document.getElementById('sell-btn');
-  sellBtn.textContent = `Sell (🪙+${sellVal})`;
-  sellBtn.onclick = () => sellTower(tower);
+  if (kind === 'tower') {
+    const sellVal = Math.floor((unit.totalSpent || 0) * 0.5);
+    sellBtn.textContent = `Sell (🪙+${sellVal})`;
+    sellBtn.onclick = () => sellUnit(unit, kind);
+  } else {
+    sellBtn.textContent = `Pick up (return charge)`;
+    sellBtn.onclick = () => pickUpAnimal(unit);
+  }
 
-  // Position popup near click but keep on screen
-  const pw = 180, ph = 120;
-  let px = cx + 10, py = cy - 20;
-  if (px + pw > window.innerWidth) px = cx - pw - 10;
-  if (py + ph > window.innerHeight) py = cy - ph;
-
-  // Convert to canvas-relative for absolute positioning
-  const canvasRect = canvas.getBoundingClientRect();
   const wrapRect = document.getElementById('canvas-wrapper').getBoundingClientRect();
-  popup.style.left = (cx - wrapRect.left + 10) + 'px';
-  popup.style.top  = (cy - wrapRect.top  - 20) + 'px';
+  let px = cx - wrapRect.left + 10;
+  let py = cy - wrapRect.top - 20;
+  if (px + 180 > 1024) px = cx - wrapRect.left - 190;
+  if (py + 140 > 768) py = cy - wrapRect.top - 140;
+  popup.style.left = px + 'px';
+  popup.style.top = py + 'px';
   popup.style.display = 'block';
 }
 
 function closePopup() {
   document.getElementById('tower-popup').style.display = 'none';
   state.selectedTower = null;
+  state.selectedAnimal = null;
 }
 
-function upgradeTower(tower, upgradeIdx) {
-  const def = TOWER_DEFS[tower.type];
+function upgradeUnit(unit, kind, upgradeIdx, cx, cy) {
+  const def = kind === 'tower' ? TOWER_DEFS[unit.type] : ANIMAL_DEFS[unit.type];
   const upgrade = def.upgrades[upgradeIdx];
   if (!upgrade || state.coins < upgrade.cost) return;
   state.coins -= upgrade.cost;
-  tower.totalSpent += upgrade.cost;
-  upgrade.apply(tower);
-  tower.upgradeLevel++;
+  unit.totalSpent = (unit.totalSpent || 0) + upgrade.cost;
+  upgrade.apply(unit);
+  unit.upgradeLevel++;
   updateHUD();
-  openPopup(tower, parseInt(document.getElementById('tower-popup').style.left) + document.getElementById('canvas-wrapper').getBoundingClientRect().left - 10,
-             parseInt(document.getElementById('tower-popup').style.top)  + document.getElementById('canvas-wrapper').getBoundingClientRect().top  + 20);
+  openPopup(unit, kind, cx, cy);
 }
 
-function sellTower(tower) {
-  const val = Math.floor(tower.totalSpent * 0.5);
+function sellUnit(unit, kind) {
+  const val = Math.floor((unit.totalSpent || 0) * 0.5);
   state.coins += val;
-  state.towers = state.towers.filter(t => t !== tower);
+  if (kind === 'tower') {
+    state.towers = state.towers.filter(t => t !== unit);
+  } else {
+    state.placedAnimals = state.placedAnimals.filter(a => a !== unit);
+  }
   closePopup();
   updateHUD();
 }
+
+function pickUpAnimal(animal) {
+  state.animalCollection[animal.type]++;
+  state.placedAnimals = state.placedAnimals.filter(a => a !== animal);
+  closePopup();
+  updateHUD();
+}
+
+function upgradeTower(tower, idx) { upgradeUnit(tower, 'tower', idx, 0, 0); }
+function sellTower(tower) { sellUnit(tower, 'tower'); }
 
 // ─── Main game loop ───────────────────────────────────────────────────────────
 let lastTime = null;
 
 function gameLoop(timestamp) {
   if (!lastTime) lastTime = timestamp;
-  const dt = Math.min((timestamp - lastTime) / 1000, 0.1); // cap dt
+  const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
   lastTime = timestamp;
 
   if (state.phase === 'spawning' || state.phase === 'wave') {
-    // Spawning
     if (state.spawnQueue.length > 0) {
       state.spawnTimer -= dt * 1000;
       if (state.spawnTimer <= 0) {
         spawnEnemy(state.spawnQueue.shift());
-        state.spawnTimer = 800; // 0.8s between spawns
+        state.spawnTimer = 800;
         if (state.spawnQueue.length === 0) state.phase = 'wave';
       }
+    }
+
+    // Tick powerup timers
+    if (state.tidalWaveTimer > 0) {
+      state.tidalWaveTimer = Math.max(0, state.tidalWaveTimer - dt);
     }
 
     moveEnemies(dt);
     updateTowers(dt);
     updateProjectiles(dt);
+    updateAnimals(dt);
 
-    // Clean up dead/reached enemies and award coins
     for (const e of state.enemies) {
       if (e.dead) {
-        state.coins += e.reward;
-        state.totalCoinsEarned += e.reward;
+        const reward = state.coinCurrentActive ? e.reward * 2 : e.reward;
+        state.coins += reward;
+        state.totalCoinsEarned += reward;
         if (e.type === 'boss') {
           spawnEnemy('bag', e.waypointIndex);
           spawnEnemy('bag', e.waypointIndex);
@@ -993,11 +1610,17 @@ function gameLoop(timestamp) {
     if (state.waveEndDelay >= 0) {
       state.waveEndDelay -= dt;
       if (state.waveEndDelay < 0) {
+        // Reset wave-end powerups
+        state.coinCurrentActive = false;
         if (state.wave >= WAVES.length - 1) {
           triggerWin();
         } else {
           state.phase = 'between';
           state.wave++;
+          // Unlock clam shop after wave 3 (wave index 2 = wave 3 complete, then wave increments to 3)
+          if (state.wave >= 3 && !state.clamShopUnlocked) {
+            state.clamShopUnlocked = true;
+          }
           startCountdown();
         }
       }
@@ -1008,7 +1631,7 @@ function gameLoop(timestamp) {
   if (state.phase !== 'gameover' && state.phase !== 'win') {
     requestAnimationFrame(gameLoop);
   } else {
-    render(); // final frame
+    render();
   }
 }
 

@@ -7,7 +7,8 @@
       "mcp__playwright__browser_console_messages",
       "Bash(npx *)",
       "Bash(curl -s http://localhost:8765)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(start *)"
     ]
   }
 }
