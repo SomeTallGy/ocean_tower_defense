@@ -43,9 +43,15 @@ Path is stored as an ordered array of `[col, row]` waypoints. Enemies lerp betwe
 
 | Tower | Base cost | Base range (tiles) | Base damage | Fire rate (shots/sec) | Upgrade 1 (50 coins) | Upgrade 2 (100 coins) |
 |---|---|---|---|---|---|---|
-| Net launcher | 50 | 2.5 | 0 (slows only) | — | Slow duration: 2s → 4s | Slow radius: 2.5 → 4 tiles |
+| Net launcher | 50 | 2.5 | 0 (slows only) | — (burst fire, see below) | Slow duration: 2s → 4s | Slow radius: 2.5 → 4 tiles |
 | Seagull squad | 75 | 2 | 15 | 1.75 | Targets 1 → 2 enemies at once | Damage: 15 → 25 |
 | Whale spout | 100 | 3 | 40 (AoE) | 0.5 | AoE radius: 1 → 2 tiles | Damage: 40 → 70 |
+
+### Net Launcher burst mechanic
+- Fires 5 shots, then enters a 4-second reload state
+- During reload: tower circle turns grey, a teal progress bar fills beneath it
+- `burstShots` and `reloadTimer` are reset to 0 at the start of each wave
+- Slow percentage (50%) and range are unchanged
 
 - Towers placed by dragging from the bottom panel onto a buildable tile
 - Click a placed tower to open upgrade/sell popup
@@ -96,12 +102,25 @@ Seashell drop is random uniform across the three types.
 
 ## Trash enemy types
 
-| Enemy | HP | Speed (tiles/sec) | Coin reward | Introduced |
-|---|---|---|---|---|
-| Plastic bag | 40 | 2.5 | 10 | Wave 1 |
-| Soda can | 120 | 1.8 | 20 | Wave 2 |
-| Old tire | 500 | 1.0 | 40 | Wave 6 |
-| Trash bag (boss) | 1200 | 0.8 | 100 + spawns 2 plastic bags on death | Wave 5 |
+| Enemy | HP | Shield HP | Speed (tiles/sec) | Coin reward | Introduced |
+|---|---|---|---|---|---|
+| Plastic bag | 40 | 0 | 2.5 | 10 | Wave 1 |
+| Soda can | 120 | 40 | 1.8 | 20 | Wave 2 |
+| Old tire | 500 | 150 | 1.0 | 40 | Wave 6 |
+| Trash bag (boss) | 1200 | 300 | 0.8 | 100 | Wave 5 |
+
+### Shield system
+- Soda Can, Old Tire, and Trash Bag carry a shield HP layer. Incoming damage depletes the shield before touching real HP.
+- When the shield breaks, a white burst/pop effect fires at the enemy position.
+- Shield ring color lerps: red (full) → white (50%) → transparent (0%) — drawn as a ring just outside the sprite.
+- Plastic Bag has no shield.
+- Damage is routed through `applyDamage(e, amount)` — do not write `e.hp -=` directly anywhere else.
+
+### Boss death burst scaling
+- Wave 1–5: spawns 2 Plastic Bags on death
+- Wave 6–8: spawns 2 Soda Cans on death
+- Wave 9+: spawns 1 Soda Can + 1 Old Tire on death
+- Burst-spawned enemies carry `fromBurst: true` and cannot themselves trigger a death burst.
 
 ---
 
@@ -122,7 +141,13 @@ Seashell drop is random uniform across the three types.
 
 - 10-second countdown between waves
 - "Send now" button skips the countdown
-- Enemies spawn from the top of the path at 0.8s intervals within a wave
+- Enemies spawn from the top of the path; spawn gap varies by wave (see pack composition below)
+
+### Pack composition
+- Waves 1–3: enemies shuffled randomly, 800ms between each spawn
+- Waves 4–5: same-type clusters of 2–3 (300ms within cluster, 900ms between clusters)
+- Waves 6–10: mixed-type clusters of 2–3 (350ms within cluster, 900ms between clusters)
+- Spawn queue entries are `{ type, gapAfter }` objects; logic lives in `buildSpawnQueue(waveDef, waveIndex)`
 
 ---
 
@@ -138,6 +163,8 @@ Seashell drop is random uniform across the three types.
 - **Between waves:** Countdown timer + "Send now" button
 - **Win screen:** Wave cleared, score, total coins earned, restart button
 - **Lose screen (0 lives):** "The ocean needs you!" message, final score, restart button
+- **Version badge:** `v1.1` in the bottom-right corner of the canvas (always visible, low opacity)
+- **What's New button:** Prominent full-width button at the top of the How to Play modal; opens a separate `#whats-new-modal` with v1.1 patch notes
 
 ---
 
@@ -171,6 +198,8 @@ Seashell drop is random uniform across the three types.
 - **Wave overlay must not block the grid.** The `#wave-overlay` is positioned `top: 12px; left: 50%; transform: translateX(-50%)` — a compact banner at the top of the canvas. Do not revert it to `top: 50% / transform: translate(-50%, -50%)` (centered), as that blocks tower placement.
 - **Wave 1 prep window.** Before wave 1 starts, the player gets a 10-second countdown during which they can place towers. The overlay button reads "Place towers, then Start ▶" and triggers the countdown — it must not skip straight to `startWave()`.
 - **Canvas `fillStyle` alpha leaks into emoji.** After drawing semi-transparent shapes (e.g. the enemy shadow at `rgba(0,0,0,0.2)`), always reset `ctx.fillStyle` to an opaque color before calling `ctx.fillText`. Some browsers inherit the alpha from `fillStyle` when rendering emoji, making them nearly invisible.
+- **Do not write `e.hp -=` directly.** All enemy damage must go through `applyDamage(e, amount)` so the shield layer is respected. The only `e.hp -=` in the codebase should be inside that function.
+- **Burst-spawned enemies must not chain.** Enemies created by boss death bursts carry `fromBurst: true`. The death handler checks this flag before triggering another burst — do not remove it.
 
 ---
 

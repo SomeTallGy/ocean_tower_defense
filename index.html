@@ -149,6 +149,82 @@
     font-size: 13px;
     line-height: 1.5;
   }
+  @keyframes sparkle-pop {
+    0%   { transform: scale(1) rotate(0deg);   opacity: 1; }
+    25%  { transform: scale(1.4) rotate(-15deg); opacity: 1; }
+    50%  { transform: scale(0.9) rotate(10deg);  opacity: 0.6; }
+    75%  { transform: scale(1.3) rotate(-8deg);  opacity: 1; }
+    100% { transform: scale(1) rotate(0deg);   opacity: 1; }
+  }
+  .sparkle-anim {
+    display: inline-block;
+    animation: sparkle-pop 1.6s ease-in-out infinite;
+  }
+
+  /* What's New modal */
+  #whats-new-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+  }
+  #whats-new-modal.visible { display: flex; }
+  #whats-new-box {
+    background: #0a3d56;
+    border: 3px solid #f5c842;
+    border-radius: 20px;
+    width: 520px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #whats-new-header {
+    background: #0d4f6e;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #f5c842;
+    flex-shrink: 0;
+  }
+  #whats-new-header h2 { color: #f5c842; font-size: 20px; margin: 0; }
+  #whats-new-header span { color: rgba(245,200,66,0.6); font-size: 13px; margin-left: 10px; }
+  #whats-new-close {
+    background: #f5c842;
+    color: #0d4f6e;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 18px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  #whats-new-close:hover { background: #ffd966; }
+  #whats-new-body {
+    padding: 20px 28px;
+    overflow-y: auto;
+    color: #e0f0ff;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .wn-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(77,184,212,0.3);
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+  .wn-item .wn-icon { font-size: 26px; flex-shrink: 0; line-height: 1.1; }
+  .wn-item .wn-text { color: #d0eaff; font-size: 13px; line-height: 1.5; }
+  .wn-item .wn-title { color: #fff; font-weight: bold; font-size: 14px; display: block; margin-bottom: 2px; }
+
   #seashell-hud {
     margin-left: auto;
     display: flex;
@@ -189,6 +265,16 @@
     width: 1024px;
     height: 768px;
     overflow: hidden;
+  }
+  #version-badge {
+    position: absolute;
+    bottom: 6px;
+    right: 10px;
+    color: rgba(255,255,255,0.28);
+    font-size: 11px;
+    font-family: monospace;
+    pointer-events: none;
+    z-index: 5;
   }
   #gameCanvas {
     display: block;
@@ -472,6 +558,7 @@
   <!-- Canvas -->
   <div id="canvas-wrapper">
     <canvas id="gameCanvas" width="1024" height="768"></canvas>
+    <div id="version-badge">v1.1</div>
 
     <div id="wave-overlay">
       <h2 id="overlay-title">Wave 1 Complete!</h2>
@@ -544,6 +631,12 @@
       <button id="help-close" onclick="closeHelp()">Got it! ▶</button>
     </div>
     <div id="help-body">
+
+      <button onclick="openWhatsNew()" style="width:100%;background:linear-gradient(135deg,#0d4f6e,#1a6a8a);border:2px solid #f5c842;border-radius:12px;color:#f5c842;font-size:15px;font-weight:bold;padding:12px 20px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+        <span class="sparkle-anim" style="font-size:22px;">✨</span>
+        <span>What's New in v1.1 — Shields, formations &amp; Net Launcher reload</span>
+        <span style="margin-left:auto;font-size:13px;opacity:0.7;">View →</span>
+      </button>
 
       <div class="help-section">
         <h3>The Basics</h3>
@@ -671,6 +764,43 @@
   </div>
 </div>
 
+<div id="whats-new-modal">
+  <div id="whats-new-box">
+    <div id="whats-new-header">
+      <div>
+        <h2>✨ What's New</h2>
+        <span>Version 1.1 — Balance Update</span>
+      </div>
+      <button id="whats-new-close" onclick="closeWhatsNew()">Got it! ▶</button>
+    </div>
+    <div id="whats-new-body">
+      <div class="wn-item">
+        <span class="wn-icon">🛡️</span>
+        <div class="wn-text">
+          <span class="wn-title">Shield system</span>
+          Tougher enemies now carry a shield — that red ring around them is your warning.
+          Wear it down before your towers can deal real damage. Plastic bags are shield-free; everything else puts up a fight.
+        </div>
+      </div>
+      <div class="wn-item">
+        <span class="wn-icon">🌊</span>
+        <div class="wn-text">
+          <span class="wn-title">Tighter formations</span>
+          From wave 4 onward, enemies travel in packs — a quick burst of the same type arrives together before you get a breath. Later waves mix things up even more. Spread your towers wisely.
+        </div>
+      </div>
+      <div class="wn-item">
+        <span class="wn-icon">🎣</span>
+        <div class="wn-text">
+          <span class="wn-title">Net Launcher reload</span>
+          Your Net Launcher fires 5 shots, then needs 4 seconds to reload.
+          Watch for the grey-out and the bar beneath it — that's your gap. Plan your slow windows and don't rely on it non-stop!
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // ─── Constants ────────────────────────────────────────────────────────────────
 const TILE = 64;
@@ -712,10 +842,10 @@ const WAVES = [
 ];
 
 const ENEMY_DEFS = {
-  bag:  { hp:40,  speed:2.5, reward:10,  emoji:'🛍️',  color:'#a8d8ea' },
-  can:  { hp:120, speed:1.8, reward:20,  emoji:'🥤',  color:'#e8a838' },
-  tire: { hp:500, speed:1.0, reward:40,  emoji:'⭕',  color:'#555' },
-  boss: { hp:1200, speed:0.8, reward:100, emoji:'🗑️', color:'#8B4513', boss:true },
+  bag:  { hp:40,  speed:2.5, reward:10,  emoji:'🛍️',  color:'#a8d8ea', shield:0 },
+  can:  { hp:120, speed:1.8, reward:20,  emoji:'🥤',  color:'#e8a838', shield:40 },
+  tire: { hp:500, speed:1.0, reward:40,  emoji:'⭕',  color:'#555',    shield:150 },
+  boss: { hp:1200, speed:0.8, reward:100, emoji:'🗑️', color:'#8B4513', shield:300, boss:true },
 };
 
 const TOWER_DEFS = {
@@ -806,6 +936,7 @@ function initState() {
     enemies: [],
     projectiles: [],
     animalProjectiles: [],
+    shieldBursts: [],   // shield-break burst particles
     placedAnimals: [],
     spawnQueue: [],
     spawnTimer: 0,
@@ -902,8 +1033,21 @@ function drawUnit(col, row, emoji, circleColor, isSelected, upgradeLevel, extraL
 
 function drawTowers() {
   for (const t of state.towers) {
-    drawUnit(t.col, t.row, TOWER_DEFS[t.type].emoji, TOWER_DEFS[t.type].color,
+    const reloading = t.type === 'net' && t.reloadTimer > 0;
+    const circleColor = reloading ? '#888' : TOWER_DEFS[t.type].color;
+    drawUnit(t.col, t.row, TOWER_DEFS[t.type].emoji, circleColor,
              t === state.selectedTower, t.upgradeLevel, null);
+    if (reloading) {
+      const cx = t.col * TILE + TILE/2;
+      const cy = t.row * TILE + TILE/2;
+      const barW = 36, barH = 4;
+      const bx = cx - barW/2, by = cy + 28;
+      const pct = 1 - t.reloadTimer / 4000;
+      ctx.fillStyle = '#444';
+      ctx.fillRect(bx, by, barW, barH);
+      ctx.fillStyle = '#4db8d4';
+      ctx.fillRect(bx, by, barW * pct, barH);
+    }
   }
 }
 
@@ -925,6 +1069,49 @@ function drawAnimals() {
     }
     drawUnit(a.col, a.row, def.emoji, def.color,
              a === state.selectedAnimal, a.upgradeLevel, null);
+  }
+}
+
+function drawShieldRings() {
+  for (const e of state.enemies) {
+    if (e.dead || e.shield <= 0) continue;
+    const sz = e.type === 'boss' ? 44 : 32;
+    const radius = sz / 2 + 7;
+    const pct = e.shield / e.maxShield; // 1 = full, 0 = broken
+
+    // red (pct=1) → white (pct=0.5) → transparent (pct=0)
+    let r, g, b, a;
+    if (pct >= 0.5) {
+      const t = (pct - 0.5) / 0.5;
+      r = 255; g = Math.round((1 - t) * 255); b = Math.round((1 - t) * 255);
+      a = 0.9;
+    } else {
+      const t = pct / 0.5;
+      r = 255; g = 255; b = 255;
+      a = t * 0.9;
+    }
+
+    ctx.save();
+    ctx.strokeStyle = `rgba(${r},${g},${b},${a})`;
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.arc(e.x, e.y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Shield-break burst flashes
+  for (const b of state.shieldBursts) {
+    const progress = b.age / b.maxAge;
+    const burstRadius = b.radius + progress * 14;
+    const opacity = 1 - progress;
+    ctx.save();
+    ctx.strokeStyle = `rgba(255,255,255,${opacity * 0.9})`;
+    ctx.lineWidth = 3 - progress * 2;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, burstRadius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
   }
 }
 
@@ -1015,6 +1202,7 @@ function render() {
   drawRangePreview();
   drawTowers();
   drawAnimals();
+  drawShieldRings();
   drawEnemies();
   drawProjectiles();
 }
@@ -1109,29 +1297,99 @@ function updateClamShopBtn() {
 }
 
 // ─── Wave management ──────────────────────────────────────────────────────────
-function buildSpawnQueue(waveDef) {
-  const queue = [];
+function buildSpawnQueue(waveDef, waveIndex) {
+  const INTRA = 300; // ms within a cluster
+  const INTER = 900; // ms between clusters
+  const CLUSTER_SIZE = () => Math.random() < 0.5 ? 2 : 3;
+
+  if (waveIndex < 3) {
+    // Waves 1-3: flat shuffle at 800ms
+    const types = [];
+    for (const group of waveDef.enemies) {
+      for (let i = 0; i < group.count; i++) types.push(group.type);
+    }
+    for (let i = types.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [types[i], types[j]] = [types[j], types[i]];
+    }
+    return types.map((type, idx) => ({ type, gapAfter: 800 }));
+  }
+
+  if (waveIndex < 6) {
+    // Waves 4-5: same-type clusters of 2-3
+    const result = [];
+    for (const group of waveDef.enemies) {
+      let remaining = group.count;
+      while (remaining > 0) {
+        const clusterSize = Math.min(remaining, CLUSTER_SIZE());
+        for (let i = 0; i < clusterSize; i++) {
+          result.push({ type: group.type, gapAfter: i < clusterSize - 1 ? INTRA : INTER });
+        }
+        remaining -= clusterSize;
+      }
+    }
+    // Shuffle the clusters (not individual enemies) to mix type order
+    // Rebuild as cluster array, shuffle, flatten
+    const clusters = [];
+    let cur = [];
+    for (const item of result) {
+      cur.push(item);
+      if (item.gapAfter === INTER) { clusters.push(cur); cur = []; }
+    }
+    if (cur.length) clusters.push(cur);
+    for (let i = clusters.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [clusters[i], clusters[j]] = [clusters[j], clusters[i]];
+    }
+    return clusters.flat();
+  }
+
+  // Waves 6+: mixed-type clusters (round-robin across pools)
+  const pools = {};
   for (const group of waveDef.enemies) {
-    for (let i = 0; i < group.count; i++) queue.push(group.type);
+    pools[group.type] = group.count;
   }
-  for (let i = queue.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i+1));
-    [queue[i], queue[j]] = [queue[j], queue[i]];
+  const typeOrder = Object.keys(pools).sort(() => Math.random() - 0.5);
+  let typeIdx = 0;
+  const result = [];
+  const totalEnemies = waveDef.enemies.reduce((s, g) => s + g.count, 0);
+  let placed = 0;
+  while (placed < totalEnemies) {
+    const clusterSize = Math.min(totalEnemies - placed, CLUSTER_SIZE());
+    for (let i = 0; i < clusterSize; i++) {
+      // find next type with remaining count
+      let found = false;
+      for (let t = 0; t < typeOrder.length; t++) {
+        const type = typeOrder[(typeIdx + t) % typeOrder.length];
+        if (pools[type] > 0) {
+          pools[type]--;
+          result.push({ type, gapAfter: i < clusterSize - 1 ? 350 : INTER });
+          typeIdx = (typeIdx + t + 1) % typeOrder.length;
+          found = true;
+          break;
+        }
+      }
+      if (!found) break;
+    }
+    placed += clusterSize;
   }
-  return queue;
+  return result;
 }
 
 function startWave() {
   hideOverlay();
   const waveDef = WAVES[state.wave];
-  state.spawnQueue = buildSpawnQueue(waveDef);
+  state.spawnQueue = buildSpawnQueue(waveDef, state.wave);
   state.spawnTimer = 0;
   state.waveEndDelay = -1;
   state.phase = 'spawning';
+  for (const t of state.towers) {
+    if (t.type === 'net') { t.burstShots = 0; t.reloadTimer = 0; }
+  }
   updateHUD();
 }
 
-function spawnEnemy(type, waypointIndex = 0) {
+function spawnEnemy(type, waypointIndex = 0, fromBurst = false) {
   const [sc, sr] = PATH_WAYPOINTS[waypointIndex];
   state.enemies.push({
     type,
@@ -1148,6 +1406,10 @@ function spawnEnemy(type, waypointIndex = 0) {
     pushbackCooldown: 0,
     dead: false,
     reached: false,
+    fromBurst,
+    shield: ENEMY_DEFS[type].shield,
+    maxShield: ENEMY_DEFS[type].shield,
+    tier: state.wave < 3 ? 'normal' : state.wave < 6 ? 'threat' : 'elite',
   });
 }
 
@@ -1197,6 +1459,10 @@ function moveEnemies(dt) {
 // ─── Tower logic ──────────────────────────────────────────────────────────────
 function updateTowers(dt) {
   for (const t of state.towers) {
+    if (t.type === 'net' && t.reloadTimer > 0) {
+      t.reloadTimer = Math.max(0, t.reloadTimer - dt * 1000);
+      continue;
+    }
     t.cooldown = Math.max(0, t.cooldown - dt * 1000);
     if (t.cooldown > 0) continue;
 
@@ -1215,6 +1481,8 @@ function updateTowers(dt) {
         if (e.dead || e.reached) continue;
         if (Math.hypot(e.x - cx, e.y - cy) <= t.range * TILE) e.slowTimer = t.slowDuration;
       }
+      t.burstShots++;
+      if (t.burstShots >= 5) { t.burstShots = 0; t.reloadTimer = 4000; }
       t.cooldown = 2000;
       state.projectiles.push({ x: cx, y: cy, tx: nearest.x, ty: nearest.y, target: null, speed: 300, type: 'net' });
     } else if (t.type === 'seagull') {
@@ -1237,6 +1505,21 @@ function updateTowers(dt) {
   }
 }
 
+function applyDamage(e, amount) {
+  if (e.dead || e.reached) return;
+  if (e.shield > 0) {
+    e.shield -= amount;
+    if (e.shield <= 0) {
+      e.shield = 0;
+      const sz = e.type === 'boss' ? 44 : 32;
+      state.shieldBursts.push({ x: e.x, y: e.y, radius: sz / 2 + 7, age: 0, maxAge: 0.28 });
+    }
+    return; // damage absorbed by shield
+  }
+  e.hp -= amount;
+  if (e.hp <= 0) e.dead = true;
+}
+
 function updateProjectiles(dt) {
   state.projectiles = state.projectiles.filter(p => {
     const tx = p.target ? p.target.x : p.tx;
@@ -1250,13 +1533,11 @@ function updateProjectiles(dt) {
           for (const e of state.enemies) {
             if (e.dead || e.reached) continue;
             if (Math.hypot(e.x - p.target.x, e.y - p.target.y) <= p.aoeRadius * TILE) {
-              e.hp -= p.damage;
-              if (e.hp <= 0) e.dead = true;
+              applyDamage(e, p.damage);
             }
           }
         } else if (p.type === 'seagull') {
-          p.target.hp -= p.damage;
-          if (p.target.hp <= 0) p.target.dead = true;
+          applyDamage(p.target, p.damage);
         }
       }
       return false;
@@ -1364,8 +1645,7 @@ function updateAnimals(dt) {
       for (const e of state.enemies) {
         if (e.dead || e.reached) continue;
         if (Math.hypot(e.x - px, e.y - py) <= a.aoeRadius * TILE) {
-          e.hp -= a.damage;
-          if (e.hp <= 0) e.dead = true;
+          applyDamage(e, a.damage);
         }
       }
       a.spent = true;
@@ -1381,8 +1661,7 @@ function updateAnimals(dt) {
     const dist = Math.sqrt(dx*dx + dy*dy);
     const step = p.speed * dt;
     if (step >= dist || dist < 6) {
-      p.target.hp -= p.damage;
-      if (p.target.hp <= 0) p.target.dead = true;
+      applyDamage(p.target, p.damage);
       return false;
     }
     p.x += (dx/dist)*step; p.y += (dy/dist)*step;
@@ -1605,7 +1884,8 @@ function showStartOverlay() {
   const ov = document.getElementById('wave-overlay');
   ov.style.display = 'block';
   document.getElementById('overlay-title').textContent = 'Tidewatch';
-  document.getElementById('overlay-msg').innerHTML = 'Stop the trash — protect the ocean!<span id="countdown" style="display:none">10</span>';
+  document.getElementById('overlay-msg').innerHTML =
+    'Stop the trash — protect the ocean!<span id="countdown" style="display:none">10</span>';
   document.getElementById('send-now-btn').textContent = 'Place towers, then Start ▶';
   document.getElementById('send-now-btn').onclick = () => {
     document.getElementById('send-now-btn').textContent = 'Send Now ▶';
@@ -1681,6 +1961,9 @@ function placeTower(type, col, row) {
     cooldown: 0,
     upgradeLevel: 0,
     totalSpent: def.cost,
+    // net launcher burst state
+    burstShots: 0,
+    reloadTimer: 0,
   });
   updateHUD();
   closePopup();
@@ -1815,6 +2098,13 @@ function closeHelp() {
   if (isPaused) resumeGame();
 }
 
+function openWhatsNew() {
+  document.getElementById('whats-new-modal').classList.add('visible');
+}
+function closeWhatsNew() {
+  document.getElementById('whats-new-modal').classList.remove('visible');
+}
+
 function togglePause() {
   if (isPaused) {
     closeHelp();
@@ -1857,8 +2147,9 @@ function gameLoop(timestamp) {
     if (state.spawnQueue.length > 0) {
       state.spawnTimer -= dt * 1000;
       if (state.spawnTimer <= 0) {
-        spawnEnemy(state.spawnQueue.shift());
-        state.spawnTimer = 800;
+        const next = state.spawnQueue.shift();
+        spawnEnemy(next.type);
+        state.spawnTimer = next.gapAfter;
         if (state.spawnQueue.length === 0) state.phase = 'wave';
       }
     }
@@ -1872,15 +2163,19 @@ function gameLoop(timestamp) {
     updateTowers(dt);
     updateProjectiles(dt);
     updateAnimals(dt);
+    state.shieldBursts.forEach(b => b.age += dt);
+    state.shieldBursts = state.shieldBursts.filter(b => b.age < b.maxAge);
 
     for (const e of state.enemies) {
       if (e.dead) {
         const reward = state.coinCurrentActive ? e.reward * 2 : e.reward;
         state.coins += reward;
         state.totalCoinsEarned += reward;
-        if (e.type === 'boss') {
-          spawnEnemy('bag', e.waypointIndex);
-          spawnEnemy('bag', e.waypointIndex);
+        if (e.type === 'boss' && !e.fromBurst) {
+          const burst = state.wave >= 8 ? ['can', 'tire']
+                      : state.wave >= 5 ? ['can', 'can']
+                      :                  ['bag', 'bag'];
+          for (const t of burst) spawnEnemy(t, e.waypointIndex, true);
         }
         updateHUD();
       }
